@@ -64,8 +64,8 @@ class TreeNode<K extends Comparable<K>, V> {
          throw new NullPointerException("Keys or values cannot be null");
       }
       int added = 0;
-      TreeNode.currentAddTreeDepth++;
       if (toInsertHash < this.hash) {
+         TreeNode.currentAddTreeDepth++;
          if (null == left) {
             left = new TreeNode<>(key, value);
             added = 1;
@@ -73,6 +73,7 @@ class TreeNode<K extends Comparable<K>, V> {
             added = left.insert(key, value, toInsertHash);
          }
       } else if (toInsertHash > this.hash) {
+         TreeNode.currentAddTreeDepth++;
          if (null == right) {
             right = new TreeNode<>(key, value);
             added = 1;
@@ -82,23 +83,23 @@ class TreeNode<K extends Comparable<K>, V> {
       } else { // equal hashes
          if (this.keyValue.getKey().equals(key)) {
             // Key-value pair already in tree, update the value for the key.
-            this.keyValue = new Pair<>(key, value);
+            this.keyValue.setValue(value);
          } else {
             // OPTIONAL different key, same hash, put in the linked list.
             if (null == list) {
                list = new LinkedListImplementation<>();
                list.add(new Pair<>(key, value));
+               added = 1;
             } else {
                Pair<K,V> newItem = new Pair<>(key, value);
                int index = list.indexOf(newItem);
                if (index < 0) {
                   list.add(newItem);
+                  added = 1;
                } else {
-                  list.remove(index);
-                  list.add(newItem);
+                  list.get(index).setValue(value);
                }
             }
-            added = 1;
             if (list.size() > TreeNode.longestCollisionChain) {
                TreeNode.longestCollisionChain = list.size();
             }

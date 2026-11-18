@@ -5,6 +5,7 @@ class TreeAnalyzerVisitor<K extends Comparable<K>, V> implements Visitor<K, V> {
 	int minHeight = Integer.MAX_VALUE;
 	int maxHeight = Integer.MIN_VALUE;
 	int currentHeight = 0;
+	int longestCollisionChain = 0;
 
 	TreeAnalyzerVisitor() {
 		// Nada
@@ -12,6 +13,7 @@ class TreeAnalyzerVisitor<K extends Comparable<K>, V> implements Visitor<K, V> {
 
 	@Override
 	public void visit(TreeNode<K, V> node) {
+		if (node.list != null) longestCollisionChain = Math.max(longestCollisionChain, node.list.size());
 
 		if (null == node.left && null == node.right) {
 			minHeight = Math.min(minHeight, currentHeight);

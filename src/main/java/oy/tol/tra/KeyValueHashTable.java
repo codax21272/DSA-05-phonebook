@@ -1,138 +1,130 @@
 package oy.tol.tra;
 
+/** Open addressing with bounded linear probing and a maximum load of 0.65. */
 public class KeyValueHashTable<K extends Comparable<K>, V> implements Dictionary<K, V> {
-
-    // This should implement a hash table.
-
-    private Pair<K, V>[] values = null;
-    private int count = 0;
-    private int collisionCount = 0;
-    private int maxProbingSteps = 0;
-    private int reallocationCount = 0;
-    private static final double LOAD_FACTOR = 0.45;
+    private Pair<K, V>[] values;
+    private int count, maxProbingSteps, reallocationCount;
+    private long collisionCount;
+    private static final double LOAD_FACTOR = 0.65;
     private static final int DEFAULT_CAPACITY = 20;
+    private static final int MAX_ARRAY_SIZE = Integer.MAX_VALUE - 8;
 
-    public KeyValueHashTable(int capacity) throws OutOfMemoryError {
-        ensureCapacity(capacity);
+    public KeyValueHashTable() { this(DEFAULT_CAPACITY); }
+    public KeyValueHashTable(int capacity) { ensureCapacity(capacity); }
+    @Override public Type getType() { return Type.HASHTABLE; }
+    @Override public int size() { return count; }
+
+    private int capacityFor(int elements) {
+        double required = Math.ceil(Math.max(DEFAULT_CAPACITY, elements) / LOAD_FACTOR);
+        if (required > MAX_ARRAY_SIZE) throw new OutOfMemoryError("Requested capacity is too large");
+        return (int) required;
     }
 
-    public KeyValueHashTable() throws OutOfMemoryError {
-        ensureCapacity(DEFAULT_CAPACITY);
-    }
-
-    @Override
-    public Type getType() {
-        return Type.NONE;
-    }
-
-    @SuppressWarnings("unchecked")
-    @Override
-    public void ensureCapacity(int capacity) throws OutOfMemoryError {
-        if (capacity < DEFAULT_CAPACITY) {
-            capacity = DEFAULT_CAPACITY;
-        }
-        // Assuming capacity means the count of elements to add, so multiplying by fill factor.
-        values = (Pair<K, V>[]) new Pair[(int) ((double) capacity * (1.0 + LOAD_FACTOR))];
-        reallocationCount = 0;
-        count = 0;
+    /** Resets storage per Dictionary. Failed allocation leaves existing contents intact. */
+    @Override @SuppressWarnings("unchecked")
+    public void ensureCapacity(int capacity) {
+        Pair<K, V>[] replacement = (Pair<K, V>[]) new Pair[capacityFor(capacity)];
+        values = replacement;
+        count = maxProbingSteps = reallocationCount = 0;
         collisionCount = 0;
-        maxProbingSteps = 0;
     }
 
-    @Override
-    public int size() {
-        // TODO: Implement this.
-        return 0;
+    private int index(K key, int capacity) {
+        return Math.floorMod(key.hashCode(), capacity);
     }
 
-    /**
-     * Prints out the statistics of the hash table.
-     * Here you should print out member variable information which tell something
-     * about your implementation.
-     * <p>
-     * For example, if you implement this using a hash table, update member
-     * variables of the class (int counters) in add() whenever a collision
-     * happen. Then print this counter value here.
-     * You will then see if you have too many collisions. It will tell you that your
-     * hash function is not good.
-     */
-    @Override
-    public String getStatus() {
-        StringBuilder builder = new StringBuilder();
-        builder.append(String.format("Hash table load factor is %.2f%n", LOAD_FACTOR));
-        builder.append(String.format("Hash table capacity is %d%n", values.length));
-        builder.append(String.format("Current fill rate is %.2f%%%n", (count / (double)values.length) * 100.0));
-        builder.append(String.format("Hash table had %d collisions when filling the hash table.%n", collisionCount));
-        builder.append(String.format("Hash table had to probe %d times in the worst case.%n", maxProbingSteps));
-        builder.append(String.format("Hash table had to reallocate %d times.%n", reallocationCount));
-        return builder.toString();
-    }
-
-    @Override
-    public boolean add(K key, V value) throws IllegalArgumentException, OutOfMemoryError {
-        // TODO: Implement this.
-        // Remeber to check for null values.
-
-        // Checks if the LOAD_FACTOR has been exceeded --> if so, reallocates to a bigger hashtable.
-        if (((double)count * (1.0 + LOAD_FACTOR)) >= values.length) {
-            reallocate((int)((double)(values.length) * (1.0 / LOAD_FACTOR)));
+    @Override public boolean add(K key, V value) {
+        if (key == null || value == null) throw new IllegalArgumentException("Key and value cannot be null");
+        int slot = index(key, values.length);
+        int probes = 0;
+        while (values[slot] != null && probes < values.length) {
+            if (values[slot].getKey().equals(key)) {
+                values[slot].setValue(value);
+                maxProbingSteps = Math.max(maxProbingSteps, probes);
+                return true;
+            }
+            collisionCount++;
+            probes++;
+            if (++slot == values.length) slot = 0;
         }
-        // Remember to get the hash key from the Person,
-        // hash table computes the index for the Person (based on the hash value),
-        // if index was taken by different Person (collision), get new hash and index,
-        // insert into table when the index has a null in it,
-        // return true if existing Person updated or new Person inserted.
-        
-        return false;
+        maxProbingSteps = Math.max(maxProbingSteps, probes);
+        if (count + 1 > values.length * LOAD_FACTOR) {
+            long grown = Math.max((long) capacityFor(count + 1), (long) values.length * 2);
+            grown = Math.min(grown, MAX_ARRAY_SIZE);
+            if (grown <= values.length) throw new OutOfMemoryError("Hash table is full");
+            reallocate((int) grown);
+            slot = index(key, values.length);
+            probes = 0;
+            while (values[slot] != null) {
+                collisionCount++;
+                probes++;
+                if (++slot == values.length) slot = 0;
+            }
+            maxProbingSteps = Math.max(maxProbingSteps, probes);
+        }
+        values[slot] = new Pair<>(key, value);
+        count++;
+        return true;
     }
 
-    @Override
-    public V find(K key) throws IllegalArgumentException {
-        // Remember to check for null.
-
-        // Must use same method for computing index as add method
-        
+    @Override public V find(K key) {
+        if (key == null) throw new IllegalArgumentException("Key cannot be null");
+        int slot = index(key, values.length);
+        for (int probes = 0; probes < values.length; probes++) {
+            Pair<K, V> pair = values[slot];
+            if (pair == null) return null;
+            if (pair.getKey().equals(key)) return pair.getValue();
+            if (++slot == values.length) slot = 0;
+        }
         return null;
     }
 
-    @Override
-    @java.lang.SuppressWarnings({"unchecked"})
-    public Pair<K,V> [] toSortedArray() {
-        Pair<K, V> [] sorted = (Pair<K,V>[])new Pair[count];
-        int newIndex = 0;
-        for (int index = 0; index < values.length; index++) {
-           if (values[index] != null) {
-              sorted[newIndex++] = new Pair<>(values[index].getKey(), values[index].getValue());
-           }
+    /** Rehash completely before publishing the replacement. Statistics are cumulative. */
+    @SuppressWarnings("unchecked")
+    private void reallocate(int capacity) {
+        Pair<K, V>[] replacement = (Pair<K, V>[]) new Pair[capacity];
+        long collisions = 0;
+        int maximum = 0;
+        for (Pair<K, V> pair : values) {
+            if (pair == null) continue;
+            int slot = index(pair.getKey(), capacity);
+            int probes = 0;
+            while (replacement[slot] != null) {
+                probes++;
+                if (++slot == capacity) slot = 0;
+            }
+            replacement[slot] = pair;
+            collisions += probes;
+            maximum = Math.max(maximum, probes);
+        }
+        values = replacement;
+        collisionCount += collisions;
+        maxProbingSteps = Math.max(maxProbingSteps, maximum);
+        reallocationCount++;
+    }
+
+    @Override public void compress() {
+        int capacity = capacityFor(count);
+        if (capacity < values.length) reallocate(capacity);
+    }
+
+    @Override @SuppressWarnings("unchecked")
+    public Pair<K, V>[] toSortedArray() {
+        Pair<K, V>[] sorted = (Pair<K, V>[]) new Pair[count];
+        int next = 0;
+        for (Pair<K, V> pair : values) {
+            if (pair != null) sorted[next++] = new Pair<>(pair.getKey(), pair.getValue());
         }
         Algorithms.fastSort(sorted);
         return sorted;
-      }
-
-    @SuppressWarnings("unchecked")
-    private void reallocate(int newSize) throws OutOfMemoryError {
-        if (newSize < DEFAULT_CAPACITY) {
-            newSize = DEFAULT_CAPACITY;
-        }
-        reallocationCount++;
-        Pair<K, V>[] oldPairs = values;
-        this.values = (Pair<K, V>[]) new Pair[(int)((double)newSize * (1.0 + LOAD_FACTOR))];
-        count = 0;
-        collisionCount = 0;
-        maxProbingSteps = 0;
-        for (int index = 0; index < oldPairs.length; index++) {
-            if (oldPairs[index] != null) {
-                add(oldPairs[index].getKey(), oldPairs[index].getValue());
-            }
-        }
     }
 
-    @Override
-    public void compress() throws OutOfMemoryError {
-        int newCapacity = (int)(count * (1.0 / LOAD_FACTOR));
-		    if (newCapacity < values.length) {
-			      reallocate(newCapacity);
-		    } 
+    @Override public String getStatus() {
+        return String.format("Hash table load factor is %.2f%nHash table capacity is %d%n"
+                + "Current fill rate is %.2f%%%nHash table had %d collisions (including rehashing).%n"
+                + "Hash table had to probe %d times in the worst case.%n"
+                + "Hash table had to reallocate %d times.%n",
+                LOAD_FACTOR, values.length, 100.0 * count / values.length,
+                collisionCount, maxProbingSteps, reallocationCount);
     }
- 
 }

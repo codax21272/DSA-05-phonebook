@@ -32,15 +32,17 @@ public class Person implements Comparable<Person> {
     }
 
     /**
-     * TODO: Implement the method below to return a hash value. It must be calculated from the
-     * first and last name of the person.
+     * Hashes the full name, matching exactly the identity used by equals and compareTo.
      * 
      * @return Hash value of the person.
      */
     @Override
     public int hashCode() {
         int hash = 5381;
-        // Implement hash function here.
+        String name = getFullName();
+        for (int index = 0; index < name.length(); index++) {
+            hash = hash * 33 ^ name.charAt(index);
+        }
         return hash;
     }
 
