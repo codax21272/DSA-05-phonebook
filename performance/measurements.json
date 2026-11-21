@@ -1,0 +1,250 @@
+{
+  "add": [
+    {
+      "structure": "BST",
+      "file": "village.txt",
+      "bytes": 4561,
+      "elements": 100,
+      "milliseconds": 10
+    },
+    {
+      "structure": "BST",
+      "file": "small-town.txt",
+      "bytes": 44892,
+      "elements": 1000,
+      "milliseconds": 10
+    },
+    {
+      "structure": "BST",
+      "file": "town.txt",
+      "bytes": 451617,
+      "elements": 10000,
+      "milliseconds": 23
+    },
+    {
+      "structure": "BST",
+      "file": "large-town.txt",
+      "bytes": 2255053,
+      "elements": 50000,
+      "milliseconds": 104
+    },
+    {
+      "structure": "BST",
+      "file": "city.txt",
+      "bytes": 4511688,
+      "elements": 100000,
+      "milliseconds": 175
+    },
+    {
+      "structure": "BST",
+      "file": "large-city.txt",
+      "bytes": 22554540,
+      "elements": 500000,
+      "milliseconds": 757
+    },
+    {
+      "structure": "BST",
+      "file": "metropolis.txt",
+      "bytes": 45107513,
+      "elements": 1000000,
+      "milliseconds": 1886
+    },
+    {
+      "structure": "BST",
+      "file": "capital.txt",
+      "bytes": 90209834,
+      "elements": 2000000,
+      "milliseconds": 4001
+    },
+    {
+      "structure": "BST",
+      "file": "megalopolis.txt",
+      "bytes": 227564229,
+      "elements": 5000000,
+      "milliseconds": 14941
+    },
+    {
+      "structure": "HashTable",
+      "file": "village.txt",
+      "bytes": 4561,
+      "elements": 100,
+      "milliseconds": 4
+    },
+    {
+      "structure": "HashTable",
+      "file": "small-town.txt",
+      "bytes": 44892,
+      "elements": 1000,
+      "milliseconds": 8
+    },
+    {
+      "structure": "HashTable",
+      "file": "town.txt",
+      "bytes": 451617,
+      "elements": 10000,
+      "milliseconds": 23
+    },
+    {
+      "structure": "HashTable",
+      "file": "large-town.txt",
+      "bytes": 2255053,
+      "elements": 50000,
+      "milliseconds": 143
+    },
+    {
+      "structure": "HashTable",
+      "file": "city.txt",
+      "bytes": 4511688,
+      "elements": 100000,
+      "milliseconds": 199
+    },
+    {
+      "structure": "HashTable",
+      "file": "large-city.txt",
+      "bytes": 22554540,
+      "elements": 500000,
+      "milliseconds": 983
+    },
+    {
+      "structure": "HashTable",
+      "file": "metropolis.txt",
+      "bytes": 45107513,
+      "elements": 1000000,
+      "milliseconds": 2139
+    },
+    {
+      "structure": "HashTable",
+      "file": "capital.txt",
+      "bytes": 90209834,
+      "elements": 2000000,
+      "milliseconds": 3801
+    },
+    {
+      "structure": "HashTable",
+      "file": "megalopolis.txt",
+      "bytes": 227564229,
+      "elements": 5000000,
+      "milliseconds": 7834
+    }
+  ],
+  "to_sorted_array": [
+    {
+      "structure": "BST",
+      "file": "village.txt",
+      "bytes": 4561,
+      "elements": 100,
+      "milliseconds": 5
+    },
+    {
+      "structure": "BST",
+      "file": "small-town.txt",
+      "bytes": 44892,
+      "elements": 1000,
+      "milliseconds": 5
+    },
+    {
+      "structure": "BST",
+      "file": "town.txt",
+      "bytes": 451617,
+      "elements": 10000,
+      "milliseconds": 26
+    },
+    {
+      "structure": "BST",
+      "file": "large-town.txt",
+      "bytes": 2255053,
+      "elements": 50000,
+      "milliseconds": 213
+    },
+    {
+      "structure": "BST",
+      "file": "city.txt",
+      "bytes": 4511688,
+      "elements": 100000,
+      "milliseconds": 540
+    },
+    {
+      "structure": "BST",
+      "file": "large-city.txt",
+      "bytes": 22554540,
+      "elements": 500000,
+      "milliseconds": 2723
+    },
+    {
+      "structure": "BST",
+      "file": "metropolis.txt",
+      "bytes": 45107513,
+      "elements": 1000000,
+      "milliseconds": 5543
+    },
+    {
+      "structure": "BST",
+      "file": "capital.txt",
+      "bytes": 90209834,
+      "elements": 2000000,
+      "milliseconds": 13544
+    },
+    {
+      "structure": "HashTable",
+      "file": "village.txt",
+      "bytes": 4561,
+      "elements": 100,
+      "milliseconds": 1
+    },
+    {
+      "structure": "HashTable",
+      "file": "small-town.txt",
+      "bytes": 44892,
+      "elements": 1000,
+      "milliseconds": 1
+    },
+    {
+      "structure": "HashTable",
+      "file": "town.txt",
+      "bytes": 451617,
+      "elements": 10000,
+      "milliseconds": 30
+    },
+    {
+      "structure": "HashTable",
+      "file": "large-town.txt",
+      "bytes": 2255053,
+      "elements": 50000,
+      "milliseconds": 153
+    },
+    {
+      "structure": "HashTable",
+      "file": "city.txt",
+      "bytes": 4511688,
+      "elements": 100000,
+      "milliseconds": 349
+    },
+    {
+      "structure": "HashTable",
+      "file": "large-city.txt",
+      "bytes": 22554540,
+      "elements": 500000,
+      "milliseconds": 2212
+    },
+    {
+      "structure": "HashTable",
+      "file": "metropolis.txt",
+      "bytes": 45107513,
+      "elements": 1000000,
+      "milliseconds": 5558
+    },
+    {
+      "structure": "HashTable",
+      "file": "capital.txt",
+      "bytes": 90209834,
+      "elements": 2000000,
+      "milliseconds": 11841
+    }
+  ],
+  "archive_sha256": "68ab52dfa5be3ac49296d6c8e72ef55b7aeee9702d11a75d0747e09e34361007",
+  "note": "Single instructor benchmark run; insertion includes parsing and I/O; export includes sorted-order validation.",
+  "status_output": {
+    "PerformanceTestsAdd": "",
+    "PerformanceTestsToArray": ""
+  }
+}

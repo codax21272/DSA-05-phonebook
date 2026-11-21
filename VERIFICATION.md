@@ -95,5 +95,95 @@ One hash function and one load threshold were tested; no comparative tuning or
 quicksort-versus-heapsort measurement is claimed. No heap/stack overrides were
 needed for the available correctness data.
 
-The external towns datasets are not present locally. Large-dataset performance
-tests and a size-versus-time graph remain dependent on obtaining towns.zip.
+## Full towns dataset verification — 21 November 2026
+
+The supplied towns.zip was extracted selectively. Its PhoneBook.txt was excluded
+so the original fixture remains unchanged. All nine external datasets and the
+archive remain ignored by Git. Production sources and instructor tests required
+no changes for these checks.
+
+The machine now defaults to JDK 17, which cannot run the project's Java 18
+bytecode. The first performance invocation therefore failed before executing any
+tests. Selecting the installed JDK 24 resolved that environment mismatch without
+changing pom.xml or lowering the project's Java target.
+
+```powershell
+$env:JAVA_HOME = 'C:/Program Files/Java/jdk-24'
+mvn -B '-Dtest=PerformanceTestsAdd,PerformanceTestsToArray' '-DargLine=-Xmx4g' '-Dsurefire.timeout=1800' test
+mvn -B '-Dtest=GenericTests,ContentsTests,HashFuncTests,PhoneBookTests' '-Dsurefire.timeout=120' test
+python verification/plot_performance.py
+```
+
+The performance run completed in 1 minute 37 seconds with 4 test methods, zero
+failures, zero errors, and zero skips. Both structures were exercised across all
+datasets specified by each class. Insertion asserts exact population counts;
+sorted export checks both counts and ascending order. The correctness rerun
+passed all 13 methods with zero failures, errors, or skips. The six Surefire XML
+reports therefore show 17 passing methods in total. This was two Maven runs,
+not one combined run. JaCoCo still reports no execution data.
+
+### Measurements
+
+All times below are the actual integer milliseconds emitted by the unmodified
+tests. Insertion includes reading and parsing the file. Sorted export includes
+the test's order-validation loop. Each measurement is a single run; JIT, garbage
+collection, and I/O affect comparisons, especially for small inputs. The tests
+do not attempt a five-million-entry sorted export.
+
+| Entries | BST read/insert (ms) | HashTable read/insert (ms) | BST export (ms) | HashTable export (ms) |
+|---:|---:|---:|---:|---:|
+| 100 | 10 | 4 | 5 | 1 |
+| 1,000 | 10 | 8 | 5 | 1 |
+| 10,000 | 23 | 23 | 26 | 30 |
+| 50,000 | 104 | 143 | 213 | 153 |
+| 100,000 | 175 | 199 | 540 | 349 |
+| 500,000 | 757 | 983 | 2,723 | 2,212 |
+| 1,000,000 | 1,886 | 2,139 | 5,543 | 5,558 |
+| 2,000,000 | 4,001 | 3,801 | 13,544 | 11,841 |
+| 5,000,000 | 14,941 | 7,834 | Not tested | Not tested |
+
+![Insertion and sorted export against population](performance/performance.png)
+
+The graph uses logarithmic population and symmetric-log elapsed-time axes, with
+a linear region below 1 ms. The plot script preserves any zero-ms measurements.
+All 34 measurements, the input archive SHA-256, and the performance tests'
+status output are saved in [performance/measurements.json](performance/measurements.json).
+The graph can be regenerated from the ignored compare-add.csv and
+compare-toarray.csv outputs plus the local Surefire reports using the script
+above (Python with Matplotlib is required).
+
+The final correctness run's six lookups took 9.7393 ms for the linear array,
+0.0511 ms for HashTable, and 0.0678 ms for BST: about 190.59x and 143.65x faster
+than linear respectively. Both passed the supplied 100x assertion. These lookup
+measurements use the original 12,345-entry phonebook, not the large towns files;
+the supplied performance classes do not benchmark lookup.
+
+### Interpretation
+
+At five million entries, HashTable had 8,126,464 slots (61.53% occupied),
+8,912,241 cumulative occupied-slot collisions including rehashing, a worst probe
+distance of 97, and 18 reallocations. Its 0.65 load limit leaves room for probing;
+doubling growth explains why the final fill varies with population. Across the
+nine files, the worst reported probe distance was 104 at one million entries.
+These counters show successful collision resolution and growth, not a count of
+distinct equal-hash pairs. Roughly 38.47% of the five-million-entry array slots
+were unused; no alternative load-factor benchmark was performed.
+
+BST depth grew from 12 edges at 100 entries to 57 at five million, compared with
+an ideal balanced depth of 22 at five million. Its longest extra collision chain
+was 2 at five million, so that node held its main pair plus two list entries.
+This hash distribution avoided extreme tree depth on these datasets, but the
+tree remains unbalanced and offers no worst-case logarithmic guarantee.
+
+From one to five million entries, insertion time rose from 1,886 to 14,941 ms
+for BST and from 2,139 to 7,834 ms for HashTable. HashTable was about 1.91x faster
+at the largest input. The timings are compatible with efficient hash insertion
+and additional tree traversal cost, but cannot establish complexity empirically
+from one run. File parsing and garbage collection are included. From one to two
+million entries, sorted-export time rose by about 2.44x for BST and 2.13x for
+HashTable, consistent with the extra work of O(n log n) sorting. Both structures
+still use the same reused quicksort; no heapsort comparison was performed.
+
+The large benchmarks were run with a 4 GB heap cap; no stack-size override was
+needed. All requested datasets, performance classes, report, and graph are now
+covered. The archive and external text datasets must remain outside the commit.
